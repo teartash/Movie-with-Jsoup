@@ -34,7 +34,7 @@ public class MainActivity extends AppCompatActivity {
         progressBar=findViewById(R.id.progressbar);
         recyclerview.setHasFixedSize(true);
         recyclerview.setLayoutManager(new LinearLayoutManager(this));
-        adapter=new parse_Adapter(parseItems,this);
+        adapter=new parse_Adapter(this,parseItems);
         recyclerview.setAdapter(adapter);
 
         Content content=new Content();
@@ -60,12 +60,14 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected Void doInBackground(Void... voids){
             try {
-                String url="https://www.cinemaqatar.com/";
+                String url="https://www.cinemaqatar.com";
                 Document doc=Jsoup.connect(url).get();
                 Elements data=doc.select("span.thumbnail");
                 int size=data.size();
-                for (int i=0;i<size;i++){
+                Log.d("size", "doInBackground: "+size);
+                for (int i=0; i<size; i++){
                     String imgurl=data.select("span.thumbnail")
+                            .select("noscript")
                             .select("img")
                             .eq(i)
                             .attr("src");
@@ -73,14 +75,22 @@ public class MainActivity extends AppCompatActivity {
                             .select("span")
                             .eq(i)
                             .text();
-                    parseItems.add(new parseItem(imgurl,title));
-                    Log.d("items","img : "+imgurl+". title: "+title);
+                    String language=data.select("p.gridminfo")
+                            .eq(i)
+                            .text();
+                    String detialUrl=data.select("h4.gridminfotitle")
+                            .select("a")
+                            .eq(i)
+                            .attr("href");
+                    parseItems.add(new parseItem(imgurl,title,language,detialUrl));
+                    Log.d("items","img : "+imgurl+". title: "+title +". language: "+language);
 
                 }
 
 
             }catch (IOException e){
                 e.printStackTrace();
+
 
             }
 
